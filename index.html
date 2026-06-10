@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jay's Pantry</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f1117;
+    --bg2: #1a1d27;
+    --bg3: #22263a;
+    --border: #2e3250;
+    --text: #e8eaf6;
+    --text2: #8b90b8;
+    --text3: #555a7a;
+    --green: #4caf78;
+    --green-bg: #0e2419;
+    --red: #e07070;
+    --red-bg: #2a1010;
+    --orange: #e0a050;
+    --orange-bg: #2a1a08;
+    --blue: #6090e0;
+    --blue-bg: #0a1828;
+    --accent: #7c6af7;
+    --accent2: #5c4dd6;
+  }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
+
+  /* HEADER */
+  .header { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 14px 16px; position: sticky; top: 0; z-index: 100; }
+  .header-inner { max-width: 800px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .header h1 { font-size: 17px; font-weight: 600; color: var(--text); letter-spacing: -0.3px; }
+  .header h1 span { color: var(--accent); }
+  .phase-badge { font-size: 10px; padding: 3px 9px; border-radius: 20px; background: var(--red-bg); color: var(--red); font-weight: 600; white-space: nowrap; border: 1px solid #4a1818; }
+
+  /* TABS */
+  .tabs { background: var(--bg2); border-bottom: 1px solid var(--border); }
+  .tabs-inner { max-width: 800px; margin: 0 auto; display: flex; }
+  .tab { padding: 12px 20px; font-size: 14px; font-weight: 500; color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent; transition: all .15s; background: none; border-top: none; border-left: none; border-right: none; }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab:hover:not(.active) { color: var(--text); }
+
+  /* MAIN */
+  .main { max-width: 800px; margin: 0 auto; padding: 16px; }
+
+  /* STATS */
+  .stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 16px; }
+  .stat { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 6px; text-align: center; }
+  .stat-num { font-size: 22px; font-weight: 700; }
+  .stat-lbl { font-size: 10px; color: var(--text2); margin-top: 2px; text-transform: uppercase; letter-spacing: .05em; }
+
+  /* LEGEND */
+  .legend { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; align-items: center; }
+  .flag { font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 600; white-space: nowrap; }
+  .f-ok { background: var(--green-bg); color: var(--green); }
+  .f-sibo { background: var(--red-bg); color: var(--red); }
+  .f-diab { background: var(--orange-bg); color: var(--orange); }
+  .f-thy { background: var(--blue-bg); color: var(--blue); }
+
+  /* FILTERS */
+  .filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .filter-btn { font-size: 12px; padding: 5px 12px; border-radius: 20px; cursor: pointer; border: 1px solid var(--border); background: var(--bg2); color: var(--text2); font-weight: 500; transition: all .15s; }
+  .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .filter-btn:hover:not(.active) { border-color: var(--text3); color: var(--text); }
+
+  /* SEARCH & ADD */
+  .search-add { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .search-add input[type=text] { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; color: var(--text); font-size: 14px; outline: none; }
+  .search-add input[type=text]:focus { border-color: var(--accent); }
+  .search-input { flex: 1; min-width: 150px; }
+  .name-input { flex: 2; min-width: 150px; }
+  select { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 9px 10px; color: var(--text); font-size: 13px; outline: none; cursor: pointer; }
+  select:focus { border-color: var(--accent); }
+  .add-btn { background: var(--accent); border: none; border-radius: 8px; padding: 9px 16px; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .add-btn:hover { background: var(--accent2); }
+
+  /* CATEGORY */
+  .cat-head { font-size: 10px; font-weight: 700; color: var(--text3); letter-spacing: .1em; text-transform: uppercase; padding: 14px 0 6px; border-bottom: 1px solid var(--border); margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .cat-count { font-weight: 400; }
+
+  /* ITEM */
+  .item { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg2); margin-bottom: 4px; transition: border-color .1s; }
+  .item:hover { border-color: var(--text3); }
+  .item-name { flex: 1; font-size: 13px; color: var(--text); line-height: 1.3; min-width: 0; }
+  .item-flags { display: flex; gap: 3px; flex-shrink: 0; }
+  .info-btn { background: none; border: none; cursor: pointer; color: var(--text3); font-size: 15px; padding: 2px 4px; flex-shrink: 0; line-height: 1; }
+  .info-btn:hover { color: var(--text2); }
+  .del-btn { background: none; border: none; cursor: pointer; color: var(--text3); font-size: 15px; padding: 2px 4px; flex-shrink: 0; line-height: 1; }
+  .del-btn:hover { color: var(--red); }
+  .empty { text-align: center; padding: 40px 20px; color: var(--text3); font-size: 14px; }
+
+  /* RECIPES TAB */
+  .recipes-grid { display: grid; gap: 12px; }
+  .recipe-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .recipe-header { padding: 14px 16px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .recipe-header:hover { background: var(--bg3); }
+  .recipe-title { font-size: 15px; font-weight: 600; color: var(--text); }
+  .recipe-meta { font-size: 12px; color: var(--text2); margin-top: 3px; }
+  .recipe-chevron { color: var(--text3); font-size: 18px; transition: transform .2s; flex-shrink: 0; }
+  .recipe-chevron.open { transform: rotate(180deg); }
+  .recipe-body { padding: 0 16px 16px; border-top: 1px solid var(--border); display: none; }
+  .recipe-body.open { display: block; }
+  .recipe-section { margin-top: 14px; }
+  .recipe-section h4 { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; }
+  .ingredient-list { list-style: none; }
+  .ingredient-list li { font-size: 13px; color: var(--text2); padding: 3px 0; border-bottom: 1px solid var(--border); display: flex; gap: 8px; }
+  .ingredient-list li:last-child { border-bottom: none; }
+  .ing-amount { color: var(--accent); font-weight: 600; white-space: nowrap; min-width: 60px; }
+  .step-list { list-style: none; counter-reset: steps; }
+  .step-list li { counter-increment: steps; font-size: 13px; color: var(--text2); padding: 8px 0 8px 32px; border-bottom: 1px solid var(--border); position: relative; line-height: 1.5; }
+  .step-list li:last-child { border-bottom: none; }
+  .step-list li::before { content: counter(steps); position: absolute; left: 0; top: 8px; width: 22px; height: 22px; background: var(--bg3); border: 1px solid var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--accent); text-align: center; line-height: 22px; }
+  .recipe-note { margin-top: 12px; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 12px; color: var(--text2); line-height: 1.5; }
+  .sibo-safe-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; padding: 2px 8px; border-radius: 20px; background: var(--green-bg); color: var(--green); font-weight: 600; border: 1px solid #1a3a28; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <h1>Jay's <span>Pantry</span></h1>
+    <span class="phase-badge">⚠ SIBO Eradication Active</span>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tabs-inner">
+    <button class="tab active" onclick="showTab('pantry',this)">Pantry</button>
+    <button class="tab" onclick="showTab('recipes',this)">Recipes</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- PANTRY TAB -->
+  <div id="tab-pantry">
+    <div class="stats" id="stats"></div>
+    <div class="legend">
+      <span class="flag f-ok">✓ OK</span>
+      <span class="flag f-sibo">SIBO hold</span>
+      <span class="flag f-diab">Diabetes</span>
+      <span class="flag f-thy">Thyroid</span>
+      <span style="font-size:12px;color:var(--text3)">— tap ⓘ for notes</span>
+    </div>
+    <div class="filters" id="filters">
+      <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+      <button class="filter-btn" onclick="setFilter('ok',this)">Safe now</button>
+      <button class="filter-btn" onclick="setFilter('sibo',this)">SIBO holds</button>
+      <button class="filter-btn" onclick="setFilter('diab',this)">Diabetes</button>
+      <button class="filter-btn" onclick="setFilter('thy',this)">Thyroid</button>
+    </div>
+    <div class="search-add">
+      <input type="text" class="search-input" id="searchBox" placeholder="Search pantry..." oninput="render()">
+    </div>
+    <div class="search-add">
+      <input type="text" class="name-input" id="newName" placeholder="Add new item..." onkeydown="if(event.key==='Enter')addItem()">
+      <select id="newCat">
+        <option>Spices & seasonings</option><option>Oils & vinegars</option><option>Proteins</option>
+        <option>Dairy & eggs</option><option>Dairy & milk</option><option>Nuts & seeds</option>
+        <option>Grains & starches</option><option>Canned beans & legumes</option><option>Canned vegetables</option>
+        <option>Condiments</option><option>Sweeteners</option><option>Frozen</option>
+        <option>Fresh produce</option><option>Fermented</option><option>Bread</option>
+        <option>Supplements</option><option>Baking</option><option>Treats</option><option>Other</option>
+      </select>
+      <button class="add-btn" onclick="addItem()">+ Add</button>
+    </div>
+    <div id="list"></div>
+  </div>
+
+  <!-- RECIPES TAB -->
+  <div id="tab-recipes" style="display:none">
+    <div class="recipes-grid" id="recipes-list"></div>
+  </div>
+
+</div>
+
+<script>
+const ITEMS = [
+  {n:"Turmeric (Simply Organic)",c:"Spices & seasonings",f:["ok"],note:"Anti-inflammatory, antimicrobial. Use freely during SIBO eradication."},
+  {n:"Cumin (Simply Organic)",c:"Spices & seasonings",f:["ok"],note:"SIBO-safe. Good antimicrobial properties."},
+  {n:"Thyme (Simply Organic)",c:"Spices & seasonings",f:["ok"],note:"Contains thymol — documented antifungal. Eradication-phase weapon."},
+  {n:"Oregano (Simply Organic)",c:"Spices & seasonings",f:["ok"],note:"Carvacrol makes this antimicrobial/antifungal. Active eradication tool."},
+  {n:"Crushed red pepper (Simply Organic)",c:"Spices & seasonings",f:["ok"],note:"SIBO-safe. Watch tolerance if gut is inflamed."},
+  {n:"Ceylon cinnamon (Simply Organic)",c:"Spices & seasonings",f:["ok","diab"],note:"Low coumarin. Mild insulin-sensitizing effect. Good for blood sugar."},
+  {n:"Ground mustard (McCormick Organic)",c:"Spices & seasonings",f:["ok"]},
+  {n:"Paprika (McCormick Organic)",c:"Spices & seasonings",f:["ok"]},
+  {n:"Poultry seasoning (McCormick)",c:"Spices & seasonings",f:["ok"],note:"Herb-only blend — confirm no garlic/onion on label."},
+  {n:"Cloves whole (McCormick) x3",c:"Spices & seasonings",f:["ok"],note:"Strong antifungal. Eugenol active against Candida."},
+  {n:"Oregano ground (McCormick)",c:"Spices & seasonings",f:["ok"]},
+  {n:"Ginger ground (McCormick) x2",c:"Spices & seasonings",f:["ok"],note:"Antimicrobial and prokinetic — helps gut motility."},
+  {n:"Cinnamon sticks (McCormick Organic)",c:"Spices & seasonings",f:["ok"]},
+  {n:"Yellow mustard seed (McCormick)",c:"Spices & seasonings",f:["ok"]},
+  {n:"Pickling spice (McCormick) x3",c:"Spices & seasonings",f:["sibo"],note:"Mixed blend — likely contains onion/garlic. Check label."},
+  {n:"Bay leaves (McCormick)",c:"Spices & seasonings",f:["ok"]},
+  {n:"Nashville hot chicken (Grill Mates)",c:"Spices & seasonings",f:["sibo"],note:"Contains garlic and onion powder. Avoid."},
+  {n:"Garlic butter seasoning (Grill Mates)",c:"Spices & seasonings",f:["sibo"],note:"Contains garlic. Use garlic-infused oil instead."},
+  {n:"Montreal steak seasoning (Grill Mates)",c:"Spices & seasonings",f:["sibo"],note:"Garlic and onion. Hold until reintroduction."},
+  {n:"Montreal chicken seasoning (Grill Mates)",c:"Spices & seasonings",f:["sibo"],note:"Garlic and onion. Hold until reintroduction."},
+  {n:"Turmeric ground (McCormick, large 6x)",c:"Spices & seasonings",f:["ok"]},
+  {n:"Whole black pepper (McCormick, large)",c:"Spices & seasonings",f:["ok"]},
+  {n:"Italian seasoning (McCormick Perfect Pinch)",c:"Spices & seasonings",f:["ok"],note:"Herb blend — verify no garlic/onion."},
+  {n:"Chili powder (Morton & Bassett)",c:"Spices & seasonings",f:["ok"]},
+  {n:"Ground cumin (Morton & Bassett)",c:"Spices & seasonings",f:["ok"]},
+  {n:"Garam masala (Morton & Bassett)",c:"Spices & seasonings",f:["ok"],note:"Typically no garlic/onion. SIBO-safe."},
+  {n:"Coriander seed (Morton & Bassett) x2",c:"Spices & seasonings",f:["ok"]},
+  {n:"Garam masala (Whole Foods Organic)",c:"Spices & seasonings",f:["ok"]},
+  {n:"Cumin seed (365)",c:"Spices & seasonings",f:["ok"]},
+  {n:"Sesame seed (365)",c:"Spices & seasonings",f:["ok"]},
+  {n:"Mustard seed ground (365)",c:"Spices & seasonings",f:["ok"]},
+  {n:"Granulated onion (Member's Mark, 9.25oz)",c:"Spices & seasonings",f:["sibo"],note:"High-FODMAP. Set aside entirely during eradication."},
+  {n:"Granulated garlic (Member's Mark, 11oz)",c:"Spices & seasonings",f:["sibo"],note:"High-FODMAP. Use garlic-infused oil instead."},
+  {n:"Parsley (custom jar)",c:"Spices & seasonings",f:["ok"]},
+  {n:"Basil (custom jar)",c:"Spices & seasonings",f:["ok"]},
+  {n:"Sage ground (custom jar)",c:"Spices & seasonings",f:["ok"]},
+  {n:"Garlic powder (custom jar)",c:"Spices & seasonings",f:["sibo"],note:"High-FODMAP. Use garlic-infused oil instead."},
+  {n:"Paprika (custom jar)",c:"Spices & seasonings",f:["ok"]},
+  {n:"Thyme leaves (custom jar)",c:"Spices & seasonings",f:["ok"]},
+  {n:"Cayenne pepper (custom jar)",c:"Spices & seasonings",f:["ok"]},
+  {n:"Cumin ground (custom jar)",c:"Spices & seasonings",f:["ok"]},
+  {n:"Celery salt (custom jar)",c:"Spices & seasonings",f:["ok"]},
+  {n:"Oregano (custom jar)",c:"Spices & seasonings",f:["ok"]},
+  {n:"Lavender's Greek seasoning x2",c:"Spices & seasonings",f:["sibo"],note:"Likely contains onion/garlic. Hold during eradication."},
+  {n:"Alicia's taco seasoning",c:"Spices & seasonings",f:["sibo"],note:"Contains garlic and onion powder. Avoid."},
+  {n:"Everything bagel seasoning (Einstein Bros)",c:"Spices & seasonings",f:["sibo"],note:"Contains garlic and onion. Use plain sesame seeds instead."},
+  {n:"Nutmeg ground (Frontier Co-op)",c:"Spices & seasonings",f:["ok"]},
+  {n:"Himalayan pink salt (Olde Thompson)",c:"Spices & seasonings",f:["ok"]},
+  {n:"Saffron (small gold jar)",c:"Spices & seasonings",f:["ok"],note:"SIBO-safe. Antimicrobial. Use sparingly."},
+  {n:"Vanilla extract (Simply Organic, 4oz)",c:"Spices & seasonings",f:["ok"],note:"Pure extract — fine for SIBO."},
+  {n:"Ginger paste tube (4oz, GF)",c:"Spices & seasonings",f:["ok"],note:"Antimicrobial/prokinetic. Convenient for cooking."},
+  {n:"Avocado oil (Chosen Foods) x2",c:"Oils & vinegars",f:["ok"],note:"Primary cooking fat. High smoke point, no thyroid interaction."},
+  {n:"Avocado oil cooking spray (Market Basket)",c:"Oils & vinegars",f:["ok"]},
+  {n:"Member's Mark EVOO cooking spray",c:"Oils & vinegars",f:["ok"]},
+  {n:"Graza Frizzle high heat oil",c:"Oils & vinegars",f:["ok"]},
+  {n:"Moumnani extra virgin olive oil",c:"Oils & vinegars",f:["ok"]},
+  {n:"Lucini extra virgin olive oil (33.8oz)",c:"Oils & vinegars",f:["ok"]},
+  {n:"Cobram Estate California EVOO (1L)",c:"Oils & vinegars",f:["ok"]},
+  {n:"Dark chocolate balsamic (Olive Del Mondo)",c:"Oils & vinegars",f:["diab","sibo"],note:"Added sugars. Avoid during eradication."},
+  {n:"Sicilian lemon white balsamic (Olive Del Mondo)",c:"Oils & vinegars",f:["ok"],note:"Lighter sugar. Small amounts tolerated."},
+  {n:"Virgin flaxseed oil (International Collection)",c:"Oils & vinegars",f:["thy"],note:"Occasional use only. Do not take near Levoxyl dose window."},
+  {n:"Sun Luck pure sesame oil x2",c:"Oils & vinegars",f:["ok"]},
+  {n:"Filippo Berio red wine vinegar",c:"Oils & vinegars",f:["ok"]},
+  {n:"Emperor's sesame chili hot oil",c:"Oils & vinegars",f:["sibo"],note:"May contain garlic. Check label."},
+  {n:"Bragg ACV with mother (32oz)",c:"Oils & vinegars",f:["ok"],note:"Beneficial during eradication. 1-2 tsp in water before meals."},
+  {n:"Bragg ACV with mother (64oz gallon)",c:"Oils & vinegars",f:["ok"]},
+  {n:"Colavita white balsamic vinegar (12oz)",c:"Oils & vinegars",f:["ok"],note:"Lighter sugar. Small amounts fine."},
+  {n:"Nakano natural rice vinegar",c:"Oils & vinegars",f:["ok"],note:"Low sugar. Good for dressings and marinades."},
+  {n:"Pompeian organic balsamic vinegar",c:"Oils & vinegars",f:["sibo","diab"],note:"Concentrated sugars. Hold during eradication."},
+  {n:"Mezzetta sun-ripened dried tomatoes x3",c:"Condiments",f:["ok"],note:"Sulfite-free. SIBO-safe in small amounts."},
+  {n:"Snow's all natural clam juice (8oz)",c:"Condiments",f:["ok"],note:"Clean ingredient. Good for seafood cooking."},
+  {n:"Joyce Chen less sodium GF soy sauce",c:"Condiments",f:["ok"],note:"Better soy option. Use in small amounts."},
+  {n:"Joyce Chen double black soy sauce",c:"Condiments",f:["sibo","diab"],note:"Higher sugar. Limit."},
+  {n:"Heinz tomato ketchup x2",c:"Condiments",f:["sibo","diab"],note:"Contains sugar and often onion/garlic. Avoid."},
+  {n:"Mike's Hot Honey",c:"Condiments",f:["sibo","diab"],note:"Sugar plus garlic risk. Hold completely."},
+  {n:"McCormick brown gravy mix",c:"Condiments",f:["sibo"],note:"Contains onion/garlic powder. Avoid."},
+  {n:"Knorr beef bouillon cubes (8 cubes)",c:"Condiments",f:["sibo"],note:"Contains onion, garlic, MSG. Use bone broth instead."},
+  {n:"Better Than Bouillon roasted beef base x2",c:"Condiments",f:["sibo"],note:"Contains onion and garlic. Avoid."},
+  {n:"Frank's RedHot Original x2",c:"Condiments",f:["ok"],note:"Minimal FODMAP risk. Trace garlic — limit."},
+  {n:"Sriracha (Huy Fong, 17oz)",c:"Condiments",f:["sibo","diab"],note:"Contains garlic and sugar. Limit significantly."},
+  {n:"Bachan's Japanese BBQ sauce",c:"Condiments",f:["sibo","diab"],note:"Contains garlic and sugar. Hold."},
+  {n:"House of Tsang stir-fry classic sauce",c:"Condiments",f:["sibo"],note:"Contains garlic and onion. Avoid."},
+  {n:"Newman's Own garlic vinaigrette",c:"Condiments",f:["sibo"],note:"Garlic. Avoid."},
+  {n:"Newman's Own white balsamic vinaigrette",c:"Condiments",f:["sibo"],note:"Contains garlic. Hold."},
+  {n:"365 Organic steak sauce",c:"Condiments",f:["sibo","diab"],note:"Garlic, onion, sugar. Hold."},
+  {n:"Pastene balsamic glaze (8.4oz)",c:"Condiments",f:["sibo","diab"],note:"Concentrated sugars. Hold."},
+  {n:"Lea & Perrins Worcestershire sauce",c:"Condiments",f:["ok"],note:"SIBO-safe in teaspoon quantities."},
+  {n:"Tomato paste double concentrated tube (4.5oz)",c:"Condiments",f:["ok"],note:"Pure tomato. Good flavor base."},
+  {n:"Tessera organic capers non-pareil (3.55oz)",c:"Condiments",f:["ok"],note:"SIBO-safe. Good briny punch for fish and eggs."},
+  {n:"French's classic yellow mustard (large)",c:"Condiments",f:["ok"],note:"Plain mustard — SIBO-safe."},
+  {n:"Dietz & Watson spicy brown mustard (12oz)",c:"Condiments",f:["ok"]},
+  {n:"Inglehoffer original stone ground mustard",c:"Condiments",f:["ok"]},
+  {n:"K Hua ground chili with fried garlic (7oz)",c:"Condiments",f:["sibo"],note:"Garlic in the name. Avoid."},
+  {n:"Dragon Boy fried chili paste (7oz)",c:"Condiments",f:["sibo"],note:"Contains garlic/shallot. Hold."},
+  {n:"Mike's Amazing avocado oil mayo (12oz)",c:"Condiments",f:["ok"],note:"Avocado oil base. Check label — likely SIBO-safe."},
+  {n:"Woodstock organic peanut butter",c:"Condiments",f:["sibo"],note:"Legume-based, mold risk for fungal SIBO. Hold."},
+  {n:"Justin's classic peanut butter",c:"Condiments",f:["sibo"],note:"Same as above. Hold."},
+  {n:"Stonewall Kitchen strawberry jam",c:"Condiments",f:["sibo","diab"],note:"Sugar. Hold."},
+  {n:"Pastene sun dried tomato pesto",c:"Condiments",f:["sibo"],note:"Almost certainly contains garlic. Avoid."},
+  {n:"Joyva sesame tahini (large can)",c:"Proteins",f:["ok"],note:"Pure sesame. SIBO-safe. Good fat source and sauce base."},
+  {n:"Paleovalley bone broth protein vanilla (1.25lb)",c:"Proteins",f:["ok"],note:"Clean protein. Check sweetener."},
+  {n:"Chosen Foods bone broth protein vanilla",c:"Proteins",f:["ok"]},
+  {n:"Bumble Bee chunk white tuna albacore x5",c:"Proteins",f:["ok"],note:"Clean protein. Use freely."},
+  {n:"King Oscar salmon x2",c:"Proteins",f:["ok"],note:"Clean canned fish. SIBO-safe."},
+  {n:"King Oscar skinless/boneless mackerel",c:"Proteins",f:["ok"],note:"Good omega-3 source. SIBO-safe."},
+  {n:"Wild sockeye salmon (deli)",c:"Proteins",f:["ok"],note:"Use within 2 days or freeze today."},
+  {n:"Perdue ground chicken breast 98% fat free (1lb)",c:"Proteins",f:["ok"],note:"Excellent eradication-phase protein. Use freely."},
+  {n:"Market Basket chicken thighs 8-pack",c:"Proteins",f:["ok"],note:"Bone-in skin-on. Primary protein for roasting."},
+  {n:"Ground turkey 93% lean (Perdue)",c:"Proteins",f:["ok"],note:"Clean protein. Use freely."},
+  {n:"Market Basket 85% lean ground beef (1lb)",c:"Proteins",f:["ok"],note:"Clean protein. Use freely."},
+  {n:"Catelli organic grass-fed ground beef 85/15 x2",c:"Proteins",f:["ok"],note:"Clean protein. Use freely."},
+  {n:"Rotisserie BBQ chicken (Market Basket)",c:"Proteins",f:["sibo"],note:"BBQ sauce contains garlic, onion, sugar. Eat meat only — discard skin."},
+  {n:"Kettle & Fire grass-fed beef broth",c:"Proteins",f:["ok"],note:"Clean, no preservatives. Good cooking base."},
+  {n:"Kettle & Fire organic vegetable broth",c:"Proteins",f:["sibo"],note:"Check label for onion/garlic. Most veg broths contain both."},
+  {n:"North Country sugar-free organic bacon",c:"Proteins",f:["ok"],note:"No sugar confirmed. Good for breakfast with eggs."},
+  {n:"Eggland's Best pasture raised eggs x2 cartons",c:"Dairy & eggs",f:["ok"],note:"Best eradication-phase food. Use freely."},
+  {n:"Kate's sea salted butter (GF)",c:"Dairy & eggs",f:["ok"],note:"Minimal lactose. SIBO-safe."},
+  {n:"4th & Heart ghee himalayan pink salt (9oz)",c:"Dairy & eggs",f:["ok"],note:"Best cooking fat for eradication. Zero lactose/casein."},
+  {n:"Organic Valley pasture-raised ghee (13oz)",c:"Dairy & eggs",f:["ok"],note:"Use freely. Ghee + avocado oil are your primary cooking fats."},
+  {n:"Philadelphia original cream cheese (8oz)",c:"Dairy & eggs",f:["sibo"],note:"Moderate lactose. Small amounts may be tolerated."},
+  {n:"Sargento shredded mozzarella",c:"Dairy & eggs",f:["sibo"],note:"Moderate lactose. Use in small amounts."},
+  {n:"BelGioioso parmesan wedge",c:"Dairy & eggs",f:["ok"],note:"Aged hard cheese — very low lactose. SIBO-safe."},
+  {n:"BelGioioso fresh mozzarella pearls (4oz)",c:"Dairy & eggs",f:["sibo"],note:"More lactose than aged. Small amounts only."},
+  {n:"Kite Hill dairy-free ricotta almond milk (8oz)",c:"Dairy & eggs",f:["ok"],note:"Dairy-free, low-FODMAP. Good ricotta substitute."},
+  {n:"Organic Valley sweet cream creamer lactose free",c:"Dairy & eggs",f:["ok"],note:"Lactose removed. Fine for tea."},
+  {n:"Lactaid whole milk lactose free x2",c:"Dairy & eggs",f:["ok"],note:"Lactose removed. SIBO-safe."},
+  {n:"Fage BestSelf lactose-free plain Greek yogurt (32oz)",c:"Dairy & eggs",f:["ok"],note:"Zero lactose. Use as sour cream substitute or breakfast base."},
+  {n:"Oatly original barista oat milk",c:"Dairy & eggs",f:["sibo"],note:"Oats are high-FODMAP. Switch to coconut milk or lactose-free dairy."},
+  {n:"O Organics sweetened condensed milk",c:"Dairy & milk",f:["sibo","diab"],note:"Sugar-heavy. Avoid."},
+  {n:"Nela evaporated filled milk",c:"Dairy & milk",f:["sibo"],note:"Lactose concern. Limit."},
+  {n:"Foco coconut milk (13.5 fl oz)",c:"Dairy & milk",f:["ok"],note:"SIBO-safe fat source. Good for cooking."},
+  {n:"Member's Mark natural shelled walnuts",c:"Nuts & seeds",f:["sibo"],note:"Safe at 7-10 halves max. Portion strictly."},
+  {n:"Market Basket whole almonds",c:"Nuts & seeds",f:["sibo"],note:"Safe at 10 nuts or fewer. Portion strictly."},
+  {n:"Market Basket pecans roasted & salted (9oz)",c:"Nuts & seeds",f:["ok"],note:"Low-FODMAP. Safe at ~10 halves."},
+  {n:"Planters salted cocktail peanuts (can)",c:"Nuts & seeds",f:["sibo"],note:"Legume, mold risk for fungal SIBO. Hold."},
+  {n:"David roasted sunflower kernels (salted)",c:"Nuts & seeds",f:["sibo"],note:"Limit to ~2 tbsp max."},
+  {n:"Pastene pine nuts (pignoli)",c:"Nuts & seeds",f:["sibo"],note:"High-FODMAP above 1 tbsp. Garnish only."},
+  {n:"Bob's Red Mill whole flaxseed",c:"Nuts & seeds",f:["sibo","thy"],note:"High fermentable fiber. Thyroid note applies. Use sparingly."},
+  {n:"Bob's Red Mill organic whole chia seeds (3oz)",c:"Nuts & seeds",f:["sibo"],note:"1 tsp tolerated; 1 tbsp+ risky."},
+  {n:"365 organic black chia seeds x2",c:"Nuts & seeds",f:["sibo"],note:"Same as white chia. Fermentable fiber at larger doses."},
+  {n:"Bob's Red Mill hulled hemp seed hearts x3",c:"Nuts & seeds",f:["ok"],note:"Low-FODMAP, low fermentable fiber. Use freely."},
+  {n:"Bob's Red Mill hulled white sesame seeds (10oz)",c:"Nuts & seeds",f:["ok"]},
+  {n:"Terrasoul black sesame seeds (raw & unhulled)",c:"Nuts & seeds",f:["ok"],note:"SIBO-safe. Good fat and mineral source."},
+  {n:"Bob's Red Mill shredded coconut unsweetened x2",c:"Nuts & seeds",f:["ok"],note:"SIBO-safe in small amounts."},
+  {n:"365 organic red lentils (16oz) x2",c:"Grains & starches",f:["sibo"],note:"High-FODMAP. Hold until reintroduction."},
+  {n:"Bob's Red Mill GF pancake mix (1lb 8oz)",c:"Grains & starches",f:["sibo"],note:"Hold. Reintroduce after eradication."},
+  {n:"Orville Redenbacher's microwave popcorn x3",c:"Grains & starches",f:["sibo"],note:"Moderate FODMAP. Hold."},
+  {n:"Earth Choice premium quinoa (2lb)",c:"Grains & starches",f:["sibo"],note:"Moderate FODMAP. Hold."},
+  {n:"Nature's Earthly Choice organic quinoa",c:"Grains & starches",f:["sibo"],note:"Hold."},
+  {n:"De Cecco elbows No. 81 (1lb)",c:"Grains & starches",f:["sibo"],note:"Wheat. Hold."},
+  {n:"Barilla fettuccine (1lb)",c:"Grains & starches",f:["sibo"],note:"Wheat. Hold."},
+  {n:"Pastene Pepe Bucato pasta",c:"Grains & starches",f:["sibo"],note:"Wheat. Hold."},
+  {n:"Rao's homemade spaghetti",c:"Grains & starches",f:["sibo"],note:"Wheat. Hold. Good quality for post-eradication."},
+  {n:"Lundberg organic white basmati rice (2lb)",c:"Grains & starches",f:["sibo"],note:"Best reintroduction starch option."},
+  {n:"Lundberg organic white sushi rice (2lb)",c:"Grains & starches",f:["sibo"],note:"More fermentable. Hold longer."},
+  {n:"Carolina jasmine long grain rice (5lb)",c:"Grains & starches",f:["sibo"],note:"Hold for now."},
+  {n:"Dynasty jasmine rice",c:"Grains & starches",f:["sibo"]},
+  {n:"Goya Thai brown jasmine rice",c:"Grains & starches",f:["sibo"],note:"Hold for now."},
+  {n:"Bob's Red Mill yellow corn polenta (1lb 8oz)",c:"Grains & starches",f:["sibo"],note:"Corn, moderate FODMAP. Hold."},
+  {n:"Bob's Red Mill traditional pearl couscous (16oz)",c:"Grains & starches",f:["sibo"],note:"Wheat-based. Hold."},
+  {n:"Bob's Red Mill oat flour whole grain x2",c:"Grains & starches",f:["sibo"],note:"High-FODMAP. Hold."},
+  {n:"King Arthur unbleached self-rising flour (5lb)",c:"Grains & starches",f:["sibo"],note:"Wheat. Hold."},
+  {n:"King Arthur organic unbleached bread flour (5lb)",c:"Grains & starches",f:["sibo"],note:"Wheat. Hold."},
+  {n:"Gold Medal all purpose flour (5lb)",c:"Grains & starches",f:["sibo"],note:"Wheat. Hold."},
+  {n:"Market Basket Italian style bread crumbs (26oz)",c:"Grains & starches",f:["sibo"],note:"Wheat. Hold."},
+  {n:"Bush's Best black beans x6 (15oz cans)",c:"Canned beans & legumes",f:["sibo"],note:"Post-eradication stockpile."},
+  {n:"Goya black beans dry (16oz) x3",c:"Canned beans & legumes",f:["sibo"],note:"Hold until reintroduction."},
+  {n:"Goya Organic black beans (canned)",c:"Canned beans & legumes",f:["sibo"],note:"Hold."},
+  {n:"Hurst's red kidney beans dry (16oz) x3",c:"Canned beans & legumes",f:["sibo"],note:"Hold."},
+  {n:"Market Basket organic cannellini beans",c:"Canned beans & legumes",f:["sibo"],note:"Hold."},
+  {n:"Goya Organics cannellini/white kidney beans",c:"Canned beans & legumes",f:["sibo"],note:"Hold."},
+  {n:"Goya Organics dark kidney beans",c:"Canned beans & legumes",f:["sibo"],note:"Hold."},
+  {n:"Goya chick peas/garbanzos dry (16oz)",c:"Canned beans & legumes",f:["sibo"],note:"Hold."},
+  {n:"Market Basket chick peas/garbanzos canned (29oz)",c:"Canned beans & legumes",f:["sibo"],note:"Hold."},
+  {n:"Levant salad bar bean mix",c:"Canned beans & legumes",f:["sibo"],note:"Mixed legumes. Hold."},
+  {n:"Goya Organic whole kernel corn",c:"Canned vegetables",f:["sibo"],note:"Moderate FODMAP. Hold."},
+  {n:"Cento San Marzano organic peeled tomatoes x2",c:"Canned vegetables",f:["ok"],note:"SIBO-safe. Excellent sauce base."},
+  {n:"Pastene San Marzano tomatoes with basil",c:"Canned vegetables",f:["ok"],note:"SIBO-safe. Check for added garlic/onion."},
+  {n:"Heavenly Marzano trio tomatoes (fresh)",c:"Canned vegetables",f:["ok"],note:"Fresh heirloom tomatoes. SIBO-safe."},
+  {n:"Le Sueur very young small sweet peas",c:"Canned vegetables",f:["sibo"],note:"High-FODMAP. Hold."},
+  {n:"Pearls reduced sodium large black olives",c:"Canned vegetables",f:["ok"],note:"SIBO-safe. Good fat source."},
+  {n:"Pearls Simply Olives green ripe (pitted)",c:"Canned vegetables",f:["ok"],note:"SIBO-safe."},
+  {n:"Market Basket jumbo pitted kalamata olives",c:"Canned vegetables",f:["ok"],note:"SIBO-safe. Excellent fat source."},
+  {n:"Golden Blossom organic white forest honey",c:"Sweeteners",f:["sibo","diab"],note:"Bacterial and fungal fuel. Hold completely."},
+  {n:"Local Hive wildflower honey blend",c:"Sweeteners",f:["sibo","diab"],note:"Hold."},
+  {n:"Ben's Sugar Shack organic maple syrup (32oz)",c:"Sweeteners",f:["sibo","diab"],note:"Pure sugar. Hold completely."},
+  {n:"Market Basket pure granulated sugar",c:"Sweeteners",f:["sibo","diab"],note:"Avoid completely."},
+  {n:"Market Basket dark brown sugar",c:"Sweeteners",f:["sibo","diab"],note:"Avoid."},
+  {n:"Wholesome organic fair trade cane sugar",c:"Sweeteners",f:["sibo","diab"],note:"Avoid."},
+  {n:"Birds Eye steamfresh riced cauliflower x2",c:"Frozen",f:["ok"],note:"Best low-carb rice substitute. Use freely."},
+  {n:"Market Basket shelled edamame (16oz)",c:"Frozen",f:["sibo"],note:"Soy legume, high-FODMAP. Hold."},
+  {n:"Market Basket blueberries (frozen)",c:"Frozen",f:["ok"],note:"Low-FODMAP at half cup. Use freely within that portion."},
+  {n:"Wyman's triple berry 3lb",c:"Frozen",f:["ok"],note:"Raspberries and wild blueberries low-FODMAP. Half cup max."},
+  {n:"Organic celery (sleeve)",c:"Fresh produce",f:["ok"],note:"SIBO-safe. Good for snacking and cooking."},
+  {n:"Hass avocados x3",c:"Fresh produce",f:["sibo"],note:"Safe at 1/8 to 1/4 per serving. Fructans above that."},
+  {n:"Lemons x4",c:"Fresh produce",f:["ok"],note:"SIBO-safe, low-FODMAP."},
+  {n:"Carrots bulk (2.61 lb)",c:"Fresh produce",f:["ok"],note:"SIBO-safe. Good for snacking and roasting."},
+  {n:"Bok choy (2 lb)",c:"Fresh produce",f:["ok"],note:"Excellent SIBO-safe green. Good in stir-fry."},
+  {n:"Broccoli crowns (1 lb)",c:"Fresh produce",f:["ok"],note:"SIBO-safe at 3/4 cup cooked. Don't overdo it."},
+  {n:"Cucumbers x2",c:"Fresh produce",f:["ok"],note:"SIBO-safe. Good for snacking."},
+  {n:"Fresh Express spinach",c:"Fresh produce",f:["ok"],note:"SIBO-safe. Use in eggs, salads, cooking."},
+  {n:"Romaine lettuce",c:"Fresh produce",f:["ok"],note:"SIBO-safe. Good lettuce wrap base."},
+  {n:"Zucchini squash (1.5 lb)",c:"Fresh produce",f:["ok"],note:"SIBO-safe. Good roasted or stir-fried."},
+  {n:"Fresh turmeric root",c:"Fresh produce",f:["ok"],note:"Higher active curcumin than powder. Grate fresh."},
+  {n:"Green onion/scallion (bunch)",c:"Fresh produce",f:["ok"],note:"Green tops ONLY are SIBO-safe. Discard white bulb."},
+  {n:"Pennsylvania Dutchman fresh oyster mushrooms",c:"Fresh produce",f:["ok"],note:"SIBO-safe. Antifungal properties."},
+  {n:"Fresh blueberries",c:"Fresh produce",f:["ok"],note:"Low-FODMAP at half cup."},
+  {n:"Navel oranges (bag)",c:"Fresh produce",f:["sibo"],note:"Moderate FODMAP. Limit to one medium orange at a time."},
+  {n:"Fermented blueberries in salt water (homemade)",c:"Fresh produce",f:["ok"],note:"Lacto-fermented. 1-2 tbsp per meal as condiment."},
+  {n:"Cleveland Kitchen Kraut",c:"Fermented",f:["ok"],note:"Live cultures. Beneficial during eradication. 1-2 tbsp per meal."},
+  {n:"Sourdough bread (Market Basket bakery)",c:"Bread",f:["sibo"],note:"Wheat. Hold."},
+  {n:"Canyon Bakehouse GF Hawaiian Sweet bread",c:"Bread",f:["sibo"],note:"Added sugar. Hold."},
+  {n:"Dear Apothecary Daily Mushrooms+ powder",c:"Supplements",f:["ok"],note:"SIBO-safe. Supports gut-immune function."},
+  {n:"Eleven Blue Spirulina Powder (organic)",c:"Supplements",f:["ok"],note:"Anti-inflammatory, antioxidant. SIBO-safe."},
+  {n:"It's Just psyllium husk powder (10oz)",c:"Supplements",f:["ok"],note:"Soluble fiber. Supports motility. Start 1 tsp/day."},
+  {n:"Certified organic matcha tea (tub)",c:"Supplements",f:["ok"],note:"EGCG antimicrobial/antifungal. Excellent eradication drink."},
+  {n:"Japanese matcha powder (dark bag)",c:"Supplements",f:["ok"],note:"Premium ceremonial grade."},
+  {n:"Davis double acting baking powder (8.1oz)",c:"Baking",f:["ok"]},
+  {n:"Market Basket baking soda (4lb)",c:"Baking",f:["ok"]},
+  {n:"Fleischmann's RapidRise instant yeast x2",c:"Baking",f:["sibo"],note:"For bread making. Hold until reintroduction."},
+  {n:"Kuhl milk chocolate caramel sea salt (3.5oz)",c:"Treats",f:["sibo","diab"],note:"Sugar and dairy. Hold. 70%+ dark chocolate better option later."},
+  {n:"Joolies whole Medjool dates (2lb)",c:"Treats",f:["sibo","diab"],note:"Extremely high sugar. Set aside until reintroduction complete."},
+];
+
+const RECIPES = [
+  {
+    id:1, title:"Baked chicken thighs with roasted zucchini",
+    meta:"40 min · 4 servings · SIBO eradication-safe",
+    ingredients:[
+      {a:"4",n:"bone-in skin-on chicken thighs"},
+      {a:"3",n:"zucchini, cut into 1-inch chunks"},
+      {a:"1 cup",n:"cherry tomatoes"},
+      {a:"3 tbsp",n:"avocado oil or olive oil"},
+      {a:"1 tsp",n:"dried oregano"},
+      {a:"1 tsp",n:"dried thyme"},
+      {a:"1 tsp",n:"paprika"},
+      {a:"½ tsp",n:"turmeric"},
+      {a:"1 tsp",n:"himalayan pink salt"},
+      {a:"½ tsp",n:"black pepper"},
+      {a:"1",n:"lemon, zested and juiced"},
+      {a:"1 tsp",n:"fresh ginger, grated"},
+      {a:"3",n:"scallion greens only, sliced"},
+      {a:"2 tbsp",n:"parmesan, freshly grated (optional)"},
+    ],
+    steps:[
+      "Preheat oven to 425°F. Pull chicken out of the fridge and let sit at room temp while oven heats.",
+      "Combine oil, oregano, thyme, paprika, turmeric, salt, pepper, lemon zest, and ginger in a small bowl. Mix into a loose paste.",
+      "Pat chicken thighs completely dry with paper towels — this is the most important step for crispy skin. Rub ⅔ of the seasoning mix under the skin and over the outside of each thigh.",
+      "Toss zucchini and cherry tomatoes with remaining seasoning mix. Spread in a single layer on a rimmed baking sheet. Do not crowd.",
+      "Nestle chicken thighs skin-side up on top of or alongside the vegetables. Place on middle rack. Roast 40 minutes.",
+      "Check internal temp — 165°F at thickest part away from bone. If skin needs more color, broil 2-3 minutes watching closely.",
+      "Rest 5 minutes. Squeeze lemon juice over everything. Top with sliced scallion greens and optional parmesan. Serve from the pan.",
+    ],
+    note:"SIBO note: No garlic or onion — ginger and lemon carry the aromatic load. Make a double batch — thighs reheat well in a 375°F oven for 10 min. No cherry tomatoes? Use drained San Marzano tomatoes.",
+  },
+  {
+    id:2, title:"Yogurt bowl with fermented blueberries",
+    meta:"5 min · 1 serving · SIBO eradication-safe",
+    ingredients:[
+      {a:"¾ cup",n:"Fage BestSelf lactose-free Greek yogurt"},
+      {a:"2 tbsp",n:"fermented blueberries in salt water"},
+      {a:"¼ cup",n:"fresh blueberries"},
+      {a:"2 tbsp",n:"hemp seed hearts"},
+      {a:"10 halves",n:"pecans, roughly chopped"},
+      {a:"1 tbsp",n:"unsweetened shredded coconut"},
+      {a:"¼ tsp",n:"Ceylon cinnamon"},
+      {a:"4 drops",n:"Simply Organic vanilla extract"},
+    ],
+    steps:[
+      "Add yogurt to a bowl.",
+      "Spoon fermented blueberries and fresh blueberries on top.",
+      "Add hemp seeds, pecans, and shredded coconut.",
+      "Sprinkle cinnamon and add vanilla extract drops. Stir gently or eat as layered.",
+    ],
+    note:"SIBO note: All ingredients are eradication-phase safe. No honey or maple syrup — the vanilla and cinnamon carry the sweetness. Keep blueberry total to ½ cup combined. Pecans are your best nut choice right now — lower FODMAP than almonds or walnuts.",
+  },
+];
+
+const FLAG_STYLES = {ok:{cls:"f-ok",label:"✓ OK"},sibo:{cls:"f-sibo",label:"SIBO"},diab:{cls:"f-diab",label:"Diab"},thy:{cls:"f-thy",label:"Thyroid"}};
+
+let items = ITEMS.map((r,i)=>({...r,id:i+1}));
+let nextId = items.length+1;
+let activeFilter = "all";
+
+function autoFlag(n){
+  const nl=n.toLowerCase();
+  if(/garlic|onion|leek|shallot/.test(nl))return["sibo"];
+  if(/honey|sugar|syrup|molasses|agave|date/.test(nl))return["sibo","diab"];
+  if(/flax/.test(nl))return["sibo","thy"];
+  if(/lentil|legume|bean|chickpea/.test(nl))return["sibo"];
+  return["ok"];
+}
+
+function setFilter(f,el){
+  activeFilter=f;
+  document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));
+  el.classList.add("active");
+  render();
+}
+
+function addItem(){
+  const n=document.getElementById("newName").value.trim();
+  const c=document.getElementById("newCat").value;
+  if(!n)return;
+  items.push({n,c,f:autoFlag(n),note:"",id:nextId++});
+  document.getElementById("newName").value="";
+  render();
+}
+
+function removeItem(id){items=items.filter(i=>i.id!==id);render();}
+
+function showNote(id){
+  const item=items.find(i=>i.id===id);
+  if(!item||!item.note)return;
+  alert(item.n+"\n\n"+item.note);
+}
+
+function render(){
+  const search=document.getElementById("searchBox").value.toLowerCase();
+  const filtered=items.filter(item=>{
+    const ms=!search||item.n.toLowerCase().includes(search)||item.c.toLowerCase().includes(search);
+    const mf=activeFilter==="all"||item.f.includes(activeFilter);
+    return ms&&mf;
+  });
+
+  const total=items.length;
+  const ok=items.filter(i=>i.f.length===1&&i.f[0]==="ok").length;
+  const sibo=items.filter(i=>i.f.includes("sibo")).length;
+  const diab=items.filter(i=>i.f.includes("diab")).length;
+  const thy=items.filter(i=>i.f.includes("thy")).length;
+
+  document.getElementById("stats").innerHTML=`
+    <div class="stat"><div class="stat-num" style="color:var(--text)">${total}</div><div class="stat-lbl">Total</div></div>
+    <div class="stat"><div class="stat-num" style="color:var(--green)">${ok}</div><div class="stat-lbl">Safe now</div></div>
+    <div class="stat"><div class="stat-num" style="color:var(--red)">${sibo}</div><div class="stat-lbl">SIBO hold</div></div>
+    <div class="stat"><div class="stat-num" style="color:var(--orange)">${diab}</div><div class="stat-lbl">Diabetes</div></div>
+    <div class="stat"><div class="stat-num" style="color:var(--blue)">${thy}</div><div class="stat-lbl">Thyroid</div></div>
+  `;
+
+  const cats=[...new Set(filtered.map(i=>i.c))].sort();
+  let html="";
+  if(!filtered.length){html='<div class="empty">No items match.</div>';}
+  else{
+    cats.forEach(cat=>{
+      const ci=filtered.filter(i=>i.c===cat);
+      html+=`<div class="cat-head"><span>${cat}</span><span class="cat-count">${ci.length} items</span></div>`;
+      ci.forEach(item=>{
+        const flags=item.f.map(f=>`<span class="flag ${FLAG_STYLES[f].cls}">${FLAG_STYLES[f].label}</span>`).join("");
+        html+=`<div class="item">
+          <div class="item-name">${item.n}</div>
+          <div class="item-flags">${flags}</div>
+          ${item.note?`<button class="info-btn" onclick="showNote(${item.id})" title="Notes">ⓘ</button>`:""}
+          <button class="del-btn" onclick="removeItem(${item.id})" title="Remove">✕</button>
+        </div>`;
+      });
+    });
+  }
+  document.getElementById("list").innerHTML=html;
+}
+
+function showTab(tab, el){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  el.classList.add("active");
+  document.getElementById("tab-pantry").style.display = tab==="pantry"?"block":"none";
+  document.getElementById("tab-recipes").style.display = tab==="recipes"?"block":"none";
+}
+
+function buildRecipes(){
+  const html = RECIPES.map(r=>`
+    <div class="recipe-card">
+      <div class="recipe-header" onclick="toggleRecipe(${r.id})">
+        <div>
+          <div class="recipe-title">${r.title}</div>
+          <div class="recipe-meta">${r.meta} &nbsp;<span class="sibo-safe-badge">✓ SIBO Safe</span></div>
+        </div>
+        <div class="recipe-chevron" id="chev-${r.id}">▾</div>
+      </div>
+      <div class="recipe-body" id="body-${r.id}">
+        <div class="recipe-section">
+          <h4>Ingredients</h4>
+          <ul class="ingredient-list">
+            ${r.ingredients.map(i=>`<li><span class="ing-amount">${i.a}</span><span>${i.n}</span></li>`).join("")}
+          </ul>
+        </div>
+        <div class="recipe-section">
+          <h4>Steps</h4>
+          <ol class="step-list">
+            ${r.steps.map(s=>`<li>${s}</li>`).join("")}
+          </ol>
+        </div>
+        ${r.note?`<div class="recipe-note">📋 ${r.note}</div>`:""}
+      </div>
+    </div>
+  `).join("");
+  document.getElementById("recipes-list").innerHTML=html;
+}
+
+function toggleRecipe(id){
+  const body=document.getElementById("body-"+id);
+  const chev=document.getElementById("chev-"+id);
+  body.classList.toggle("open");
+  chev.classList.toggle("open");
+}
+
+render();
+buildRecipes();
+</script>
+</body>
+</html>
